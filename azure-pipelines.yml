@@ -1,19 +1,30 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- dev
+  - dev
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+    displayName: 'Run a multi-line script'
+
+  - task: SonarQubePrepare@4
+    inputs:
+      SonarQube: 'sonarqube'  # Replace with your SonarQube service connection name
+      scannerMode: 'CLI'
+      configMode: 'manual'
+      cliProjectKey: 'azure-devops'
+      cliSources: '.'
+      extraProperties: '-Dsonar.host.url=http://20.54.72.51:9000 -Dsonar.token=sqp_d33cc35a71c89186f118f43c128c453be9548d76'
+    displayName: 'Prepare SonarQube analysis'
+
+  # Add the build, test, and deploy tasks specific to your project here
+
+  - task: SonarQubeAnalyze@4
+    displayName: 'Run SonarQube analysis'
+
