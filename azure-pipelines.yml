@@ -5,27 +5,29 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-  - task: SonarQubePrepare@4
-    inputs:
-      SonarQube: 'sonarqube'  # Replace with your SonarQube service connection name
-      scannerMode: 'Maven'
-      configMode: 'manual'
-      cliProjectKey: 'azure-devops'
-      cliProjectName: 'azure-devops'
-      extraProperties: |
-        sonar.projectKey=azure-devops
-        sonar.projectName=azure-devops
+- task: SonarQubePrepare@4
+  displayName: Prepare Analysis Configuration task
+  inputs:
+    SonarQube: 'sonarqube'
+    scannerMode: 'Other'
+    extraProperties: |
+      sonar.projectVersion=1.0.0.0
+      sonar.projectName=azure-devops
+      sonar.sources=src/main/java/
+      sonar.language=java
+      sonar.sourceEncoding=UTF-8
+  enabled: true
 
-  - task: UseJavaVersion@1
-    inputs:
-      versionSpec: '11'
-      addToPath: true
 
-  - task: Maven@3
-    inputs:
-      mavenPomFile: 'sonarqube/sonarqubespring/pom.xml'
-      goals: 'clean install sonar:sonar'
-      codeAnalysisEnabled: true
-      codeCoverageToolOption: 'None'
+- task: Maven@3
+  inputs:
+    mavenPomFile: '$(Build.SourcesDirectory)/sonarqube/sonarqubespring/pom.xml'
+    goals: 'clean package'
+    publishJUnitResults: true
+    javaHomeOption: 'JDKVersion'
+    mavenVersionOption: 'Default'
+    mavenAuthenticateFeed: false
+    effectivePomSkip: false
+    sonarQubeRunAnalysis: true
+  enabled: true
 
-  # Add additional build and deployment tasks as required
