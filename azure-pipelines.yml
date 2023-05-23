@@ -23,7 +23,8 @@ steps:
       extraProperties: |
         -Dsonar.host.url=http://20.54.72.51:9000
         -Dsonar.token=sqp_d33cc35a71c89186f118f43c128c453be9548d76
-        -Dsonar.java.binaries=./path/to/compiled/classes  # Replace with the actual path to your compiled Java classes
+        -Dsonar.sources=src/main/java/
+        -Dsonar.language=java
     displayName: 'Prepare SonarQube analysis'
 
   # Add the build, test, and deploy tasks specific to your project here
