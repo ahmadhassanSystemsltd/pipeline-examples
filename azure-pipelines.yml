@@ -1,34 +1,54 @@
 trigger:
-  - dev
-  - release
+  branches:
+    include:
+      - dev
+      - release
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: SonarQubePrepare@4
-  displayName: Prepare Analysis Configuration task
-  inputs:
-    SonarQube: 'sonarqube'
-    scannerMode: 'Other'
-    extraProperties: |
-      sonar.projectVersion=1.0.0.0
-      sonar.projectName=azure-devops
-      sonar.sources=src/main/java/
-      sonar.language=java
-      sonar.sourceEncoding=UTF-8
-  enabled: true
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/dev') }}:
+  - task: SonarQubePrepare@4
+    displayName: Prepare Analysis Configuration task
+    inputs:
+      SonarQube: 'sonarqube'
+      scannerMode: 'Other'
+      extraProperties: |
+        sonar.projectVersion=1.0.0.0
+        sonar.projectName=azure-devops
+        sonar.sources=src/main/java/
+        sonar.language=java
+        sonar.sourceEncoding=UTF-8
+    enabled: true
 
+  - task: Maven@3
+    inputs:
+      mavenPomFile: '$(Build.SourcesDirectory)/sonarqube/sonarqubespring/pom.xml'
+      goals: 'clean package'
+      publishJUnitResults: true
+      javaHomeOption: 'JDKVersion'
+      mavenVersionOption: 'Default'
+      mavenAuthenticateFeed: false
+      effectivePomSkip: false
+      sonarQubeRunAnalysis: true
+    enabled: true
 
-- task: Maven@3
-  inputs:
-    mavenPomFile: '$(Build.SourcesDirectory)/sonarqube/sonarqubespring/pom.xml'
-    goals: 'clean package'
-    publishJUnitResults: true
-    javaHomeOption: 'JDKVersion'
-    mavenVersionOption: 'Default'
-    mavenAuthenticateFeed: false
-    effectivePomSkip: false
-    sonarQubeRunAnalysis: true
-  enabled: true
-
+- ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/release') }}:
+  - task: SonarQubePrepare@4
+    displayName: Prepare Analysis Configuration task
+    inputs:
+      SonarQube: 'sonarqube'
+      scannerMode: 'Other'
+      extraProperties: |
+        sonar.projectVersion=1.0.0.0
+        sonar.projectName=azure-devops
+        sonar.sources=src/main/java/
+        sonar.language=java
+        sonar.sourceEncoding=UTF-8
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        Write-Host "SonarQube stage skipped for the release branch."
+    enabled: true
